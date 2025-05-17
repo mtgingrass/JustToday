@@ -1,11 +1,17 @@
 import SwiftUI
 
 struct HabitRowView: View {
-    let title: String
-    let goalLabel: String
-    let completedAmount: Int
-    let isJustForToday: Bool
-    let record: Int
+        let title: String
+        let goalLabel: String
+        let completedAmount: Int
+        let isJustForToday: Bool
+        let record: Int
+        var onResetRecord: (() -> Void)? = nil
+        var onResetStreak: (() -> Void)? = nil
+        var onSetGoal: (() -> Void)? = nil
+        
+        @State private var didComplete = false
+        @State private var didSkip = false
 
     var progress: Double {
         let target = Double(goalLabel.components(separatedBy: " ").first ?? "") ?? 0
@@ -59,29 +65,38 @@ struct HabitRowView: View {
             Text("Did you complete this task today?")
                 .font(.footnote)
                 .foregroundColor(.primary)
+
             HStack {
                 Button(action: {
-                    print("✅ Completed '\(title)' today")
+                    didComplete.toggle()
+                    if didComplete { didSkip = false }
                 }) {
-                    Text("Completed")
-                        .font(.footnote)
-                        .foregroundColor(.white)
-                        .padding(.vertical, 6)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.green)
-                        .cornerRadius(8)
+                    HStack {
+                        Image(systemName: didComplete ? "checkmark.circle.fill" : "circle")
+                        Text("Completed")
+                    }
+                    .font(.footnote)
+                    .foregroundColor(.white)
+                    .padding(.vertical, 6)
+                    .frame(maxWidth: .infinity)
+                    .background(didComplete ? Color.green : Color.gray)
+                    .cornerRadius(8)
                 }
 
                 Button(action: {
-                    print("⛔️ Skip '\(title)' today")
+                    didSkip.toggle()
+                    if didSkip { didComplete = false }
                 }) {
-                    Text("Skipped")
-                        .font(.footnote)
-                        .foregroundColor(.white)
-                        .padding(.vertical, 6)
-                        .frame(maxWidth: .infinity)
-                        .background(Color.red)
-                        .cornerRadius(8)
+                    HStack {
+                        Image(systemName: didSkip ? "xmark.circle.fill" : "circle")
+                        Text("Skipped")
+                    }
+                    .font(.footnote)
+                    .foregroundColor(.white)
+                    .padding(.vertical, 6)
+                    .frame(maxWidth: .infinity)
+                    .background(didSkip ? Color.red : Color.gray)
+                    .cornerRadius(8)
                 }
             }
         }
@@ -89,6 +104,27 @@ struct HabitRowView: View {
         .background(Color(UIColor.secondarySystemBackground))
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .swipeActions(edge: .leading) {
+            Button {
+                onSetGoal?()
+            } label: {
+                Label("Set Goal", systemImage: "target")
+            }
+            .tint(.blue)
+        }
+        .swipeActions(edge: .trailing) {
+            Button(role: .destructive) {
+                onResetRecord?()
+            } label: {
+                Label("Reset\nRecord", systemImage: "arrow.counterclockwise")
+            }
+
+            Button(role: .destructive) {
+                onResetStreak?()
+            } label: {
+                Label("Reset\nStreak", systemImage: "flame")
+            }
+        }
     }
 }
 

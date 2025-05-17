@@ -18,7 +18,7 @@ struct SetGoalView: View {
     @State private var showLenientInfo = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Choose Goal Type")) {
                     Toggle("Just for Today", isOn: $isJustForToday)
